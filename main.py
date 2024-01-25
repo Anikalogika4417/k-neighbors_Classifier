@@ -1,28 +1,27 @@
 import numpy as np
-from matplotlib import pyplot as plt
+import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn import preprocessing
 
 
-x_blue = np.array([0.3, 0.5, 1, 1.4, 1.7, 2])
-y_blue = np.array([1, 4.5, 2.3, 1.9, 8.9, 4.1])
+credit_data=pd.read_csv('credit_data.csv')
 
-x_red = np.array([3.3, 3.5, 4, 4.4, 5.7, 6])
-y_red = np.array([7, 1.5, 6.3, 1.9, 2.9, 7.1])
+features = credit_data[['income', 'age', 'loan']]
+target = credit_data.default
 
-result_array_blue = np.column_stack((x_blue, y_blue))
-result_array_red = np.column_stack((x_red, y_red))
+X = np.array(features).reshape(-1, 3)
+Y = np.array(target)
 
-X = np.concatenate((result_array_blue, result_array_red), axis=0)
-Y = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+X = preprocessing.MinMaxScaler().fit_transform(X)
 
+feature_train, feature_test, target_train, target_test = train_test_split(X, Y, test_size=0.3)
 
-plt.plot(x_blue, y_blue, 'ro', color='blue')
-plt.plot(x_red, y_red, 'ro', color='red')
-plt.plot(3,5, 'ro', color='green', markersize=15)
-plt.axis([-0.5, 10, -0.5, 10])
+model = KNeighborsClassifier(n_neighbors=20)
+fitted_model = model.fit(feature_train, target_train)
+predictions = fitted_model.predict(feature_test)
 
-classifier = KNeighborsClassifier(n_neighbors=3)
-classifier.fit(X,Y)
-
-predict = classifier.predict(np.array([[5, 5]]))
-print('result: ', predict)
+print(confusion_matrix(target_test, predictions))
+print(accuracy_score(target_test, predictions))
